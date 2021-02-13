@@ -12,9 +12,9 @@ export class Mangakakalot extends Manganelo {
   }
 
   // @getBoolean
-  get version(): string { return '1.2.4'; }
+  get version(): string { return '1.2.6'; }
   get name(): string { return 'Mangakakalot' }
-  get icon(): string { return 'mangakakalot.com.ico' }
+  get icon(): string { return 'mangakakalot.com.png' }
   get author(): string { return 'getBoolean' }
   get authorWebsite(): string { return 'https://github.com/getBoolean' }
   get language(): string { return 'English' }
@@ -281,7 +281,18 @@ export class Mangakakalot extends Manganelo {
     let $ = this.cheerio.load(data)
     // Mangakakalot updated their reader, '.vung-doc' is now '.container-chapter-reader'
     let items = $('img', '.container-chapter-reader').toArray()
-    let pages = Array.from(items, x=>$(x).attr('src') ?? '' )
+    // let pages = Array.from(items, x=>$(x).attr('src') ?? '' )
+
+    let pages: string [] = [];
+    for(let item of items)
+    {
+      let page = $(item).attr('src')
+      // If page is undefined, dont push it
+      if (typeof page === 'undefined')
+        continue;
+
+      pages.push(page);
+    }
 
     return createChapterDetails({
       id: metadata.chapterId,
@@ -461,12 +472,15 @@ export class Mangakakalot extends Manganelo {
     let popularManga: MangaTile[] = [];
 
     for (let item of $('.item', '.owl-carousel').toArray()) {
-      let url = $('a', item).first().attr('href') ?? ''
-      let image = $('img', item).attr('src') ?? ''
-      if (image == '//mangakakalot.com/themes/home/images/404-avatar.png' || image == '')
-        image = 'https://mangakakalot.com/themes/home/images/404-avatar.png'
+      let url = $('a', item).first().attr('href')
+      let image = $('img', item).attr('src')
       let title = $('div.slide-caption', item).children().first().text()
       let subtitle = $('div.slide-caption', item).children().last().text()
+
+      // Credit to @GameFuzzy
+      // Checks for when no id or image found
+      if (typeof url === 'undefined' || typeof image === 'undefined') 
+        continue
 
       popularManga.push(createMangaTile({
         id: url,
@@ -483,11 +497,15 @@ export class Mangakakalot extends Manganelo {
     let latestManga: MangaTile[] = [];
 
     for (let item of $('.first', '.doreamon').toArray()) {
-      let url = $('a', item).first().attr('href') ?? ''
-      let image = $('img', item).attr('src') ?? ''
-      if (image == '//mangakakalot.com/themes/home/images/404-avatar.png' || image == '')
-        image = 'https://mangakakalot.com/themes/home/images/404-avatar.png'
+      let url = $('a', item).first().attr('href')
+      let image = $('img', item).attr('src')
       //console.log(image)
+
+      // Credit to @GameFuzzy
+      // Checks for when no id or image found
+      if (typeof url === 'undefined' || typeof image === 'undefined') 
+        continue
+
       latestManga.push(createMangaTile({
         id: url,
         image: image,
@@ -502,13 +520,17 @@ export class Mangakakalot extends Manganelo {
     let latestManga: MangaTile[] = [];
     let panel = $('.truyen-list')
     for (let item of $('.list-truyen-item-wrap', panel).toArray()) {
-      let id = $('a', item).first().attr('href') ?? ''
-      let image = $('img', item).first().attr('src') ?? ''
-      if (image == '//mangakakalot.com/themes/home/images/404-avatar.png' || image == '')
-        image = 'https://mangakakalot.com/themes/home/images/404-avatar.png'
+      let id = $('a', item).first().attr('href')
+      let image = $('img', item).first().attr('src')
       //console.log(image)
       let title = $('a', item).first().attr('title') ?? ''
       let subtitle = $('.list-story-item-wrap-chapter', item).attr('title') ?? ''
+
+      // Credit to @GameFuzzy
+      // Checks for when no id or image found
+      if (typeof id === 'undefined' || typeof image === 'undefined') 
+        continue
+
       latestManga.push(createMangaTile({
         id: id,
         image: image,

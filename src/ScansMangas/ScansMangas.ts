@@ -9,7 +9,7 @@ export class ScansMangas extends Source {
   }
 
   // @getBoolean
-  get version(): string { return '1.0.1' }
+  get version(): string { return '1.0.9' }
   get name(): string { return 'ScansMangas' }
   get icon(): string { return 'icon.png' }
   get author(): string { return 'getBoolean' }
@@ -27,6 +27,10 @@ export class ScansMangas extends Source {
       {
         text: "French",
         type: TagType.GREY
+      },
+      {
+        text: "Slow",
+        type: TagType.RED
       },
     ]
   }
@@ -63,6 +67,7 @@ export class ScansMangas extends Source {
     let panel = $('.white');
     let table = $('.infox', panel);
     let title = $('h1', table).first().text() ?? '';
+    title = this.parseString(title);
     let image = $('img', panel).attr('src') ?? '';
     let author = ''; // Updated below
     let artist = ''; // Updated below
@@ -98,11 +103,13 @@ export class ScansMangas extends Source {
     // Alt Titles
     let altTitles = $('.alter', panel).text().trim().split(' / ');
     for (let alt of altTitles) {
+      alt = this.parseString(alt)
       titles.push(alt.trim());
     }
     
     let summary = $('.entry-content-single').text().replace(/^\s+|\s+$/g, '');
-    
+    summary = this.parseString(summary);
+
     // MangaID
     // console.log(`metadata.id: ${metadata.id}`);
 
@@ -169,7 +176,7 @@ export class ScansMangas extends Source {
       chapters.push(createChapter({
         id: chapterUrl,
         mangaId: metadata.id,
-        name: name, // createIconText({ text: title }),
+        name: this.parseString(name), // createIconText({ text: title }),
         langCode: LanguageCode.FRENCH,
         chapNum: chNum,
       }));
@@ -187,7 +194,7 @@ export class ScansMangas extends Source {
       'nextPage': false,
       'page': 1
     };
-    let urlMangaId = `scan-${mangaId.replace('.', '-')}`;
+    // let urlMangaId = `scan-${mangaId.replace('.', '-')}`;
     // console.log('url: ' + `${SM_DOMAIN}/${urlMangaId}/`)
     // console.log('param: ' + ``)
 
@@ -200,7 +207,7 @@ export class ScansMangas extends Source {
     });
   }
 
-  // TODO: @getBoolean
+  // Done: @getBoolean
   getChapterDetails(data: any, metadata: any): ChapterDetails {
     console.log('Inside getChapterDetails()');
     let $ = this.cheerio.load(data);
@@ -217,10 +224,8 @@ export class ScansMangas extends Source {
 
 
     let items = $('a', '.nav_apb').toArray();
-    let prevItem;
     let item;
-    let prevImageNumber : Number;
-    let imageNumber : Number;
+    let imageNumber : number;
     let page : string;
     let imageName : string;
 
@@ -296,8 +301,8 @@ export class ScansMangas extends Source {
       manga.push(createMangaTile({
         id: id,
         image: image,
-        title: createIconText({ text: title }),
-        subtitleText: createIconText({ text: subTitle }),
+        title: createIconText({ text: this.parseString(title) }),
+        subtitleText: createIconText({ text: this.parseString(subTitle) }),
         primaryText: createIconText({ text: rating, icon: 'star.fill' }),
       }));
     }
@@ -398,20 +403,27 @@ export class ScansMangas extends Source {
     console.log('Inside parseLatestMangaTiles()');
     let latestManga: MangaTile[] = [];
     for (let item of $('.utao', '.listupd').toArray()) {
-      let url = $('a', item).first().attr('href') ?? '';
-      let urlSplit = url.split('/');
+      let url = $('a', item).first().attr('href');
+      if (typeof url === 'undefined')
+        continue
+      let urlSplit = url?.split('/');
       let id = urlSplit[urlSplit.length-2];
-      let image = $('img', item).attr('src') ?? '';
+      let image = $('img', item).attr('src');
       let latestChapters = $('.Manga', item);
       let title = $('a', item).attr('title') ?? ''
       let subtitle = $('a', latestChapters).first().text().trim()
       //console.log(image);
       // console.log(`id: ${id}`);
+
+      // Credit to @GameFuzzy
+      // Checks for when no id or image found
+      if (typeof id === 'undefined' || typeof image === 'undefined') 
+        continue
       latestManga.push(createMangaTile({
         id: id,
         image: image,
-        title: createIconText({ text: title }),
-        subtitleText: createIconText({ text: subtitle }),
+        title: createIconText({ text: this.parseString(title) }),
+        subtitleText: createIconText({ text: this.parseString(subtitle) })
       }));
     }
     
@@ -425,18 +437,25 @@ export class ScansMangas extends Source {
     
     let panel = $('.pads')
     for (let item of $('.bs', panel).toArray()) {
-      let url = $('a', item).first().attr('href') ?? '';
+      let url = $('a', item).first().attr('href');
+      if (typeof url === 'undefined')
+        continue
       let urlSplit = url.split('/');
       let id = urlSplit[urlSplit.length-2];
-      let image = $('img', item).first().attr('src') ?? '';
+      let image = $('img', item).first().attr('src');
       let title = $('a', item).attr('title') ?? '';
       // let subtitle = $('.epxs', item).text() ?? '';
       //console.log(image);
       // console.log(`id: ${id}`);
+
+      // Credit to @GameFuzzy
+      // Checks for when no id or image found
+      if (typeof id === 'undefined' || typeof image === 'undefined') 
+        continue
       latestManga.push(createMangaTile({
         id: id,
         image: image,
-        title: createIconText({ text: title }),
+        title: createIconText({ text: this.parseString(title) }),
         subtitleText: createIconText({ text: '' })
       }));
     }
@@ -540,5 +559,19 @@ export class ScansMangas extends Source {
     }
 
     return true;
+  }
+
+
+  // Done: @getBoolean Function to parse strings to fix strings having &#039; instead of "'"
+  parseString(originalString: string): string {
+    // let newString = originalString.replace(/&#039;/g, "'");
+    // newString = newString.replace(/&#8211;/g, "-");
+
+    // Decode title
+    let newString = originalString.replace(/&#(\d+);/g, function(match, dec) {
+      return String.fromCharCode(dec);
+    })
+
+    return newString;
   }
 }
