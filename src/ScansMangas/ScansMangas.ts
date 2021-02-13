@@ -54,7 +54,6 @@ export class ScansMangas extends Source {
         param: id,
       }));
     }
-    
     return requests;
   }
 
