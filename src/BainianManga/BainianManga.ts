@@ -28,6 +28,10 @@ export class BainianManga extends Source {
         text: "Chinese (中文)",
         type: TagType.GREY
       },
+      {
+        text: "WIP",
+        type: TagType.RED
+      },
     ]
   }
 
