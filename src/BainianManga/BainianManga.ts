@@ -157,7 +157,11 @@ export class BainianManga extends Source {
       // console.log(`item.text(): ${item.text().replace(/\r?\n|\r/g, '').trim()}`);
       // let name: string = item.text().replace(/\r?\n|\r/g, '').trim().split(' :').pop() ?? '';
       let name: string = item.text().replace(/\r?\n|\r/g, '').trim();
-      let chNum = Number( name.match(/\d+/)?.toString() ?? '' ); // empty string should return 0
+      let chapterNum = '';
+      let chapterArr = name.match(/^第(\d+)/);
+      if (chapterArr)
+        chapterNum = chapterArr[1];
+      let chNum = Number( chapterNum ); // empty string should return 0
       if (Number.isNaN(chNum)) {
         chNum = -9999;
       }
