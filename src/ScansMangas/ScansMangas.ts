@@ -1,7 +1,7 @@
 import { Source, Manga, MangaStatus, Chapter, ChapterDetails, HomeSectionRequest, HomeSection, MangaTile, SearchRequest, LanguageCode, TagSection, Request, /*MangaUpdates,*/ PagedResults, SourceTag, TagType } from "paperback-extensions-common"
 
 
-const SM_DOMAIN = 'https://scansmangas.xyz';
+const SM_DOMAIN = 'https://scansmangas.xyz'; 
 
 export class ScansMangas extends Source {
   constructor(cheerio: CheerioAPI) {
@@ -54,6 +54,7 @@ export class ScansMangas extends Source {
         param: id,
       }));
     }
+    
     return requests;
   }
 
